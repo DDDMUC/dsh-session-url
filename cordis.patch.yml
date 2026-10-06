@@ -1,0 +1,19 @@
+# dsh-session-url bundle patch: inserts the plugin row into the profile roster.
+#
+# The browser half (exports "./client") mirrors the main-view conversation into
+# the URL fragment and opens the conversation an `#/session/<id>` link names.
+# There is no host behavior: no route, no tool, no service.
+#
+# The entry name is the BARE package name on purpose: the client-module scanner
+# treats it as a package specifier and resolves `<name>/package.json`, so a
+# subpath entry would be cached as "not a client package" and the browser half
+# would silently never load.
+#
+# A bundle-row change is a profile composition change: enabling, disabling or
+# updating this plugin takes effect on the next page load for the browser half,
+# and after a host restart for the row itself (unless the profile sets
+# `patchReload: live`, in which case the row hot-loads and a page refresh is
+# enough).
+- insert:
+    - id: dsh-session-url
+      name: 'dsh-session-url'
