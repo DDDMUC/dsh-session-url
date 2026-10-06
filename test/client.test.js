@@ -494,24 +494,31 @@ test('a conversation row becomes a real link, and only conversation rows do', ()
   assert.match(styles[0].textContent, /:is\(button/)
 })
 
-test('a plain click still selects in place, while a modified click stays native', () => {
+test('a plain click opens the conversation here, while a modified click stays native', () => {
   // Given a linked row
-  const { dom } = openWithDom(['session:session-abc'])
+  const { env, dom } = openWithDom(['session:session-abc'])
   const anchor = dom.rows[0].querySelector('[data-dsh-part="session-link"]')
   // When the anchor is clicked plainly
   let prevented = 0
   let stopped = 0
   anchor.fire('click', { button: 0, defaultPrevented: false, preventDefault: () => { prevented += 1 }, stopPropagation: () => { stopped += 1 } })
-  // Then only the anchor's own default (navigating this tab) is cancelled: the event
-  // still bubbles, so the row selects the conversation in place as it always did
+  // Then the plugin opens that conversation here through the official navigation ...
+  assert.deepEqual(env.opened, ['session-abc'])
+  // ... and cancels both the anchor's own navigation and the row's duplicate handling
   assert.equal(prevented, 1)
-  assert.equal(stopped, 0)
+  assert.equal(stopped, 1)
+  // And the address bar names it, still without gaining a history entry
+  assert.equal(env.location.hash, '#/session/session-abc')
+  assert.deepEqual(env.writes, ['/#/session/session-abc'])
   // And a modified click is left to the browser, which opens its native new tab
-  anchor.fire('click', { button: 0, metaKey: true, defaultPrevented: false, preventDefault: () => { prevented += 1 } })
+  anchor.fire('click', { button: 0, metaKey: true, defaultPrevented: false, preventDefault: () => { prevented += 1 }, stopPropagation: () => { stopped += 1 } })
   assert.equal(prevented, 1)
-  // And an already-handled event is left alone
-  anchor.fire('click', { button: 0, defaultPrevented: true, preventDefault: () => { prevented += 1 } })
+  assert.equal(stopped, 1)
+  assert.deepEqual(env.opened, ['session-abc'])
+  // And an event another handler already took is left alone
+  anchor.fire('click', { button: 0, defaultPrevented: true, preventDefault: () => { prevented += 1 }, stopPropagation: () => { stopped += 1 } })
   assert.equal(prevented, 1)
+  assert.equal(stopped, 1)
 })
 
 test('a row that appears later, as the virtualized list grows, is linked too', () => {
