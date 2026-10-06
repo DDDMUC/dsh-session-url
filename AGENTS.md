@@ -9,7 +9,7 @@
 - **零依赖**：没有 dependencies/devDependencies，也没有遥测与网络请求；不要为了顺手而引入包。
 - **测试用 `node --test`**：`npm test`。测试**直接加载交付产物**（`node:vm` 里假 loader + 假 window + 手动时钟），不复制实现、不 mock 模块图；行为变化必须带测试。
 
-- **行链接**：`[data-row-key^="session:"]` 的会话行会被挂上真锚点（`data-dsh-part="session-link"`），点=新标签页打开、右键=浏览器原生复制链接。行选择器/属性一旦改动，必须同步改 `test/client.test.js` 里的假 DOM；找不到 DOM 或属性不匹配时一律静默 no-op，绝不改官方行、绝不抛错。
+- **行链接**：`[data-row-key^="session:"]` 的会话行会被挂上**覆盖整行的透明真锚点**（`data-dsh-part="session-link"`，作为行首子元素），右键=浏览器原生复制链接、中键/带修饰键=新标签页、左键单击只取消锚点默认行为（当前标签仍是"切过去"，走 replaceState）。样式表把行内官方控件抬到锚点之上（`:is(button,[role=button],a,…){position:relative;z-index:1}`），以免吃掉它们的点击。行选择器/属性一旦改动，必须同步改 `test/client.test.js` 里的假 DOM；找不到 DOM 或属性不匹配时一律静默 no-op，绝不改官方行、绝不抛错。
 
 ## 行为边界（改之前先读）
 
