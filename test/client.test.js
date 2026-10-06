@@ -393,6 +393,13 @@ function fakeDom(initialKeys) {
     getAttribute(name) { return this.attributes.has(name) ? this.attributes.get(name) : null }
     removeAttribute(name) { this.attributes.delete(name) }
     appendChild(child) { child.parentElement = this; this.children.push(child); return child }
+    get firstChild() { return this.children[0] ?? null }
+    insertBefore(node, reference) {
+      const index = reference === null ? this.children.length : this.children.indexOf(reference)
+      this.children.splice(index < 0 ? this.children.length : index, 0, node)
+      node.parentElement = this
+      return node
+    }
     remove() {
       if (this.parentElement !== null) {
         this.parentElement.children = this.parentElement.children.filter(c => c !== this)
@@ -477,22 +484,34 @@ test('a conversation row becomes a real link, and only conversation rows do', ()
   assert.equal(other.querySelector('[data-dsh-part="session-link"]'), null)
   assert.equal(first.getAttribute('data-dsh-session-url-host'), '1')
   assert.equal(first.style.position, 'relative')
-  // And exactly one stylesheet was injected
-  assert.equal(dom.head.children.filter(node => node.id === 'dsh-session-url-style').length, 1)
+  // The anchor covers the whole row and is the row's first child, so the row's own
+  // controls (lifted by the stylesheet) stay in front of it
+  assert.equal(first.children[0], anchor, 'the anchor must be the row first child')
+  assert.equal(anchor.className, 'dsh-session-url-link')
+  // And exactly one stylesheet was injected, lifting the official controls above the overlay
+  const styles = dom.head.children.filter(node => node.id === 'dsh-session-url-style')
+  assert.equal(styles.length, 1)
+  assert.match(styles[0].textContent, /:is\(button/)
 })
 
-test('the link never lets the row see the pointer', () => {
+test('a plain click still selects in place, while a modified click stays native', () => {
   // Given a linked row
   const { dom } = openWithDom(['session:session-abc'])
   const anchor = dom.rows[0].querySelector('[data-dsh-part="session-link"]')
-  // When the pointer events a row reacts to are fired at the anchor
+  // When the anchor is clicked plainly
+  let prevented = 0
   let stopped = 0
-  const event = { stopPropagation: () => { stopped += 1 } }
-  anchor.fire('click', event)
-  anchor.fire('pointerdown', event)
-  anchor.fire('mousedown', event)
-  // Then every one of them was stopped, so the row cannot also navigate the current tab
-  assert.equal(stopped, 3)
+  anchor.fire('click', { button: 0, defaultPrevented: false, preventDefault: () => { prevented += 1 }, stopPropagation: () => { stopped += 1 } })
+  // Then only the anchor's own default (navigating this tab) is cancelled: the event
+  // still bubbles, so the row selects the conversation in place as it always did
+  assert.equal(prevented, 1)
+  assert.equal(stopped, 0)
+  // And a modified click is left to the browser, which opens its native new tab
+  anchor.fire('click', { button: 0, metaKey: true, defaultPrevented: false, preventDefault: () => { prevented += 1 } })
+  assert.equal(prevented, 1)
+  // And an already-handled event is left alone
+  anchor.fire('click', { button: 0, defaultPrevented: true, preventDefault: () => { prevented += 1 } })
+  assert.equal(prevented, 1)
 })
 
 test('a row that appears later, as the virtualized list grows, is linked too', () => {
