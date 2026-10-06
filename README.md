@@ -1,6 +1,6 @@
 # dsh-session-url
 
-**一个对话，一个链接。** DSH Web GUI 的地址栏永远指向主视图那个对话：切对话时地址栏跟着变，把 `#/session/<id>` 链接粘进地址栏就能打开那个对话。只有浏览器半区，没有宿主行为；零依赖、零构建、不发网络请求。
+**一个对话，一个链接。** DSH Web GUI 的地址栏永远指向主视图那个对话：切对话时地址栏跟着变，把 `#/session/<id>` 链接粘进地址栏就能打开相应对话。只有浏览器半区，没有宿主行为；零依赖、零构建、不发网络请求。
 
 [中文](#中文) · [English](#english)
 
@@ -8,16 +8,16 @@
 
 ## 中文
 
-### 它做什么
+### 功能
 
-- **视图 → 链接**：主视图切到哪个对话，fragment 就变成 `#/session/<id>`。用 `history.replaceState` 写，**不新增历史记录**（返回键仍然是"离开 GUI"，不会被自己的跳转吃掉）。
+- **视图 → 链接**：主视图在哪个对话，fragment 就变成 `#/session/<id>`。用 `history.replaceState` 写，**不新增历史记录**（返回键仍然是"离开 GUI"，不会被自己的跳转吃掉）。
 - **链接 → 视图**：打开或粘贴 `#/session/<id>` 会打开那个对话。解析宽容：`#/sessions/<id>`、缺前导斜杠、URL 编码、尾部斜杠都认。
 - 只改 fragment：路径与查询串原样保留，启动 `?token=` 不会被破坏。
 
-### 为什么用 fragment（而不是路径或查询串）
+### 为什么用 fragment，而非路径或查询串
 
-- 宿主的静态回退只对**解析到 dist 根**的路径返回 `index.html`，`/s/<id>` 会 404 —— 路径式深链根本起不来。
-- 带启动 `?token=` 的请求会被 303 到干净的 `./`，多余查询串一律丢弃。fragment 从不发给宿主，所以应用内跳转不会毁掉链接。
+- 宿主的静态回退只对**解析到 dist 根**的路径返回 `index.html`，`/s/<id>` 会 404 —— 路径式深链起不来。
+- 带启动 `?token=` 的请求会被 303 到干净的 `./`，多余查询串一律丢弃。fragment 不发给宿主，所以应用内跳转不会毁掉链接。
 
 ### 安装
 
@@ -41,16 +41,16 @@ dsh plugin --profile web add link:$PWD
 
 ## English
 
-### What it does
+### Features
 
-- **View to link**: whichever conversation the main view shows, the fragment becomes `#/session/<id>`, written with `history.replaceState` so **no history entry is added** (Back still leaves the GUI).
-- **Link to view**: loading or pasting `#/session/<id>` opens that conversation. Parsing is tolerant: `#/sessions/<id>`, a missing leading slash, URL encoding and a trailing slash all work.
-- Only the fragment changes: path and query survive, so a launch `?token=` is never damaged.
+- **View to link**: the conversation the main view is in becomes the fragment `#/session/<id>`. It is written with `history.replaceState`, so **no history entry is added** (Back still leaves the GUI; it is not eaten by our own jumps).
+- **Link to view**: opening or pasting `#/session/<id>` opens that conversation. Parsing is tolerant: `#/sessions/<id>`, a missing leading slash, URL encoding and a trailing slash are all accepted.
+- Only the fragment changes: path and query are preserved as they are, so a launch `?token=` is not damaged.
 
-### Why the fragment (and not a path or query)
+### Why the fragment, and not a path or query
 
-- The host's static fallback serves `index.html` only for a path that resolves to the dist root; `/s/<id>` is a 404, so a path-style deep link cannot boot the GUI at all.
-- A request that still carries the launch `?token=` is answered with a 303 to the clean `./`, dropping extra query parameters. A fragment is never sent to the host, so in-app navigation cannot destroy the link.
+- The host's static fallback serves `index.html` only for a path that resolves to the dist root; `/s/<id>` is a 404 — a path-style deep link cannot boot the GUI.
+- A request that still carries the launch `?token=` is answered with a 303 to the clean `./`, and every extra query parameter is dropped. The fragment is not sent to the host, so in-app navigation cannot destroy the link.
 
 ### Install
 
