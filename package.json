@@ -2,6 +2,10 @@
   "name": "dsh-session-url",
   "version": "0.1.0",
   "description": "DSH Web GUI plugin: one conversation, one link — mirrors the main-view session into the URL fragment (and opens the linked conversation on load). Browser half only, no dependencies, no telemetry.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DDDMUC/dsh-session-url.git"
+  },
   "type": "module",
   "main": "lib/index.js",
   "exports": {
