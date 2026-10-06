@@ -1,6 +1,6 @@
 # dsh-session-url
 
-**一个对话，一个链接。** DSH Web GUI 的地址栏永远指向主视图那个对话：切对话时地址栏跟着变，把 `#/session/<id>` 链接粘进地址栏就能打开相应对话。只有浏览器半区，没有宿主行为；零依赖、零构建、不发网络请求。
+**一个对话，一个链接。** DSH Web GUI 的地址栏永远指向主视图那个对话：切对话时地址栏跟着变，把 `#/session/<id>` 链接粘进地址栏就能打开相应对话。只有浏览器半区，没有宿主行为；侧栏每个对话行还会出现一个小链接图标：点它就能在新标签页打开那个对话，右键就是浏览器原生的"复制链接"。零依赖、零构建、不发网络请求。
 
 [中文](#中文) · [English](#english)
 
@@ -12,6 +12,7 @@
 
 - **视图 → 链接**：主视图在哪个对话，fragment 就变成 `#/session/<id>`。用 `history.replaceState` 写，**不新增历史记录**（返回键仍然是"离开 GUI"，不会被自己的跳转吃掉）。
 - **链接 → 视图**：打开或粘贴 `#/session/<id>` 会打开那个对话。解析宽容：`#/sessions/<id>`、缺前导斜杠、URL 编码、尾部斜杠都认。
+- **列表 → 链接**：侧栏每个对话行带一个小链接图标，它是真锚点（`<a href="#/session/<id>" target="_blank">`）——左键/中键在新标签页打开那个对话，右键出浏览器原生菜单（在新标签页打开链接 / 复制链接 / 链接另存为）。
 - 只改 fragment：路径与查询串原样保留，启动 `?token=` 不会被破坏。
 
 ### 为什么用 fragment，而非路径或查询串
@@ -35,6 +36,8 @@ dsh plugin --profile web add link:$PWD
 - 只支持 fragment；带登录凭据的入口链接不可分享（token 在查询串里，不会写进链接）。
 - 服务形态变化（`sessions` / `workspaces` / `uiWorkspace` 任一面不匹配）时插件自我禁用、只打一条诊断，不触碰官方行为。
 
+- 行上的链接图标依赖官方侧栏的行结构（`div[data-row-key="session:<id>"]`）：官方改了行标签或这个属性，图标会**静默消失**（地址栏同步不受影响）；找到不匹配的行一律不碰。
+
 ### 安全与隐私
 
 浏览器半区只读目录快照、只调用官方 `openSession`；**不发网络请求、不打点、不写盘**（本仓没有家族单仓版本里的每日心跳遥测）。
@@ -45,6 +48,7 @@ dsh plugin --profile web add link:$PWD
 
 - **View to link**: the conversation the main view is in becomes the fragment `#/session/<id>`. It is written with `history.replaceState`, so **no history entry is added** (Back still leaves the GUI; it is not eaten by our own jumps).
 - **Link to view**: opening or pasting `#/session/<id>` opens that conversation. Parsing is tolerant: `#/sessions/<id>`, a missing leading slash, URL encoding and a trailing slash are all accepted.
+- **List to link**: every sidebar conversation row carries a small link icon that is a real anchor (`<a href="#/session/<id>" target="_blank">`) — left or middle click opens that conversation in a new tab, and right click gives the browser's native menu (open link in new tab / copy link / save link as).
 - Only the fragment changes: path and query are preserved as they are, so a launch `?token=` is not damaged.
 
 ### Why the fragment, and not a path or query
@@ -67,6 +71,8 @@ The browser half takes effect on the next page load; the row itself loads at hos
 - A link to an archived conversation is refused **immediately**, with one diagnostic.
 - Fragment only; an entry link carrying credentials is not shareable (the token lives in the query and is never written into the link).
 - If the service shape changes (any of `sessions` / `workspaces` / `uiWorkspace` no longer matches), the plugin disables itself with a single diagnostic and leaves the official behavior untouched.
+
+- The row icon depends on the official sidebar row markup (`div[data-row-key="session:<id>"]`): if the row tag or that attribute changes, the icon silently disappears (the address-bar sync is unaffected), and unmatched rows are never touched.
 
 ### Security and privacy
 

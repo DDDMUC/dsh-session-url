@@ -9,6 +9,8 @@
 - **零依赖**：没有 dependencies/devDependencies，也没有遥测与网络请求；不要为了顺手而引入包。
 - **测试用 `node --test`**：`npm test`。测试**直接加载交付产物**（`node:vm` 里假 loader + 假 window + 手动时钟），不复制实现、不 mock 模块图；行为变化必须带测试。
 
+- **行链接**：`[data-row-key^="session:"]` 的会话行会被挂上真锚点（`data-dsh-part="session-link"`），点=新标签页打开、右键=浏览器原生复制链接。行选择器/属性一旦改动，必须同步改 `test/client.test.js` 里的假 DOM；找不到 DOM 或属性不匹配时一律静默 no-op，绝不改官方行、绝不抛错。
+
 ## 行为边界（改之前先读）
 
 - 只写 fragment，用 `replaceState`；路径与查询串原样保留。
