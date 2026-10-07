@@ -1,6 +1,6 @@
 # AGENTS.md — dsh-session-url
 
-本仓是一个独立的 DeepSeek Harness Web GUI 插件仓（**只有浏览器半区**）。它不属于 `zhu1090093659/dsh-web` 单仓，也不随那个单仓发版：源在这里。
+本仓是一个独立的 DeepSeek Harness Web GUI 插件仓（**只有浏览器半区**）。
 
 ## 形态约束
 
